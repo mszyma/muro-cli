@@ -3,11 +3,39 @@
   "version": "0.1.0",
   "description": "Real paint colours in your terminal: search 51,000+ colours from 35 brands, find equivalents, and paint your own room photos with Muro.",
   "type": "module",
-  "bin": { "muro": "bin/muro.js" },
-  "files": ["bin", "src", "README.md"],
-  "engines": { "node": ">=20" },
-  "scripts": { "test": "node --test test/*.test.js" },
-  "keywords": ["paint", "color", "colour", "mcp", "interior", "cli", "muro"],
+  "bin": {
+    "muro": "bin/muro.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "paint",
+    "color",
+    "colour",
+    "mcp",
+    "interior",
+    "cli",
+    "muro"
+  ],
   "homepage": "https://usemuro.com/en/developers",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mszyma/muro-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mszyma/muro-cli/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }
