@@ -5,8 +5,10 @@ and paint your own room photo with [Muro](https://usemuro.com): each result come
 image, with the paint's brand, name and code, and a list of the closest paints you can buy.
 
 ```bash
-npx @usemuro/cli colors search "agreeable gray"
-npx @usemuro/cli colors equivalents "Farrow & Ball" "Hague Blue" --country PL
+npx usemuro colors search "agreeable gray"
+npx usemuro colors equivalents "Farrow & Ball" "Hague Blue" --country PL
+
+npm install -g usemuro   # then just: muro …
 ```
 
 ## Paint a photo
