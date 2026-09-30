@@ -37,3 +37,21 @@ test('kształt klucza', () => {
   assert.ok(!KEY_RE.test('muro_sk_short'));
   assert.ok(!KEY_RE.test('sk_' + 'a'.repeat(48)));
 });
+
+test('HEIC na macOS zamieniany na JPEG, inne formaty odrzucane', { skip: process.platform !== 'darwin' }, async () => {
+  const { execFileSync } = await import('node:child_process');
+  const { mkdtempSync, writeFileSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { readPhoto } = await import('../src/cli.js');
+  const dir = mkdtempSync(join(tmpdir(), 'muro-test-'));
+  const heic = join(dir, 'room.heic');
+  execFileSync('sips', ['-s', 'format', 'heic', new URL('../docs/example/before.webp', import.meta.url).pathname, '--out', heic], { stdio: 'ignore' });
+  const p = await readPhoto(heic);
+  assert.equal(p.type, 'image/jpeg');
+  assert.equal(p.name, 'room.jpg');
+  assert.deepEqual([...p.bytes.subarray(0, 3)], [0xff, 0xd8, 0xff]);
+  const gif = join(dir, 'x.gif');
+  writeFileSync(gif, 'GIF89a');
+  await assert.rejects(readPhoto(gif), /\.jpg, \.png, \.webp/);
+});

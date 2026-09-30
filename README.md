@@ -54,6 +54,17 @@ Real output of the commands above (`muro relight <project> c1 --time evening` fo
 | `muro relight <project-id> <colour-key> --time day\|evening\|night [--lamps]` | The same result in another light (1 credit) |
 
 Colours: `#3D4E57`, `"Farrow & Ball:Hague Blue"`, `"Sherwin-Williams:SW 7029"`, `"RAL 9005"`.
+
+## Photos and limits
+
+- **Formats:** JPEG, PNG or WebP, up to 12 MB, as a file or an `https://` link.
+  **HEIC/HEIF** from an iPhone is converted to JPEG automatically on macOS (built-in `sips`);
+  on other systems, save it as JPEG first.
+- **Colours per call:** 1 to 12, each one a separate image.
+- **Quality:** `standard` (≈1K, 1 credit) on any plan, `hd` (≈2K, 2 credits) from Pro, `ultra`
+  (≈4K, 3 credits) from Premium.
+- **Uploads:** up to 100 photos a day per account.
+- **Time:** about 30 seconds for two colours in Standard; a time-of-day version about 15 seconds.
 Every command takes `--json` for scripts and agents. `visualize` asks before spending credits;
 `--yes` skips the question (required when not in a terminal).
 

@@ -1,5 +1,7 @@
 // muro — prawdziwe kolory farb w terminalu i malowanie własnych zdjęć przez Muro.
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import { basename, extname, join } from 'node:path';
 import { createInterface } from 'node:readline/promises';
 import { APP_URL, ApiError, createApp } from './app.js';
@@ -32,6 +34,7 @@ Painting (Muro API key, uses your plan's credits: 1/2/3 per colour for standard/
   muro relight <project-id> <colour-key> --time day|evening|night [--lamps] [--out DIR]
 
 Colours: "#3D4E57", "Farrow & Ball:Hague Blue", "Sherwin-Williams:SW 7029", "RAL 9005".
+Photos: JPEG, PNG or WebP up to 12 MB (HEIC is converted on macOS), or an https link.
 Every command takes --json. Docs: https://usemuro.com/en/developers`;
 
 /** Minimalny parser: pozycyjne, --flaga wartość, --flaga, powtarzalne -c/--color. */
@@ -70,7 +73,7 @@ async function confirm(question) {
   return a === 'y' || a === 'yes';
 }
 
-async function readPhoto(src) {
+export async function readPhoto(src) {
   if (/^https?:\/\//i.test(src)) {
     const res = await fetch(src, { headers: { 'User-Agent': 'muro-cli' } });
     if (!res.ok) throw new Error(`Could not download the photo (${res.status}).`);
@@ -81,10 +84,35 @@ async function readPhoto(src) {
     return { bytes, type, name: basename(new URL(src).pathname) || 'photo' };
   }
   if (!existsSync(src)) throw new Error(`No such file: ${src}`);
-  const type = TYPES[extname(src).toLowerCase()];
-  if (!type) throw new Error('The photo must be a .jpg, .png or .webp file.');
+  const ext = extname(src).toLowerCase();
+  if (ext === '.heic' || ext === '.heif') return heicToJpeg(src);
+  const type = TYPES[ext];
+  if (!type) throw new Error('The photo must be a .jpg, .png, .webp or (on macOS) .heic file.');
   if (statSync(src).size > MAX_BYTES) throw new Error('The photo is larger than 12 MB.');
   return { bytes: readFileSync(src), type, name: basename(src) };
+}
+
+/**
+ * HEIC z iPhone'a: Muro przyjmuje JPEG, PNG i WebP. Na macOS zamieniamy go
+ * wbudowanym `sips` (bez dodatkowych zależności); gdzie indziej prosimy o JPEG.
+ */
+function heicToJpeg(src) {
+  if (process.platform !== 'darwin') {
+    throw new Error('HEIC photos are converted automatically only on macOS. Save the photo as JPEG first.');
+  }
+  const dir = mkdtempSync(join(tmpdir(), 'muro-heic-'));
+  const outFile = join(dir, basename(src).replace(/\.[^.]+$/, '') + '.jpg');
+  try {
+    execFileSync('sips', ['-s', 'format', 'jpeg', '-s', 'formatOptions', '90', src, '--out', outFile], { stdio: 'ignore' });
+    const bytes = readFileSync(outFile);
+    if (bytes.length > MAX_BYTES) throw new Error('The photo is larger than 12 MB after conversion.');
+    return { bytes, type: 'image/jpeg', name: basename(outFile) };
+  } catch (e) {
+    if (e instanceof Error && /12 MB/.test(e.message)) throw e;
+    throw new Error('Could not convert the HEIC photo. Save it as JPEG and try again.');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
