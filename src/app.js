@@ -35,9 +35,15 @@ export function createApp(key, { fetchImpl = fetch, base = APP_URL } = {}) {
     job: (id) => json(`/api/jobs/${encodeURIComponent(id)}`),
     relight: (body) =>
       json('/api/relight', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
-    /** Pobiera obraz wyniku (`/api/photos/…`) w pełnej rozdzielczości. */
+    /**
+     * Pobiera obraz wyniku (`/api/photos/…`) w pełnej rozdzielczości. Adres
+     * przychodzi z odpowiedzi serwera, więc klucz idzie tylko na origin API;
+     * każdy inny host (CDN, http) dostaje żądanie bez Authorization.
+     */
     async download(url) {
-      const res = await fetchImpl(url.startsWith('http') ? url : base + url, { headers: auth });
+      const u = new URL(url, base);
+      const { Authorization, ...anon } = auth;
+      const res = await fetchImpl(u.href, { headers: u.origin === new URL(base).origin ? auth : anon });
       if (!res.ok) throw new ApiError(res.status, {});
       return { bytes: Buffer.from(await res.arrayBuffer()), type: res.headers.get('content-type') ?? 'image/jpeg' };
     },
