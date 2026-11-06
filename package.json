@@ -1,6 +1,6 @@
 {
   "name": "usemuro",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Real paint colours in your terminal: search 51,000+ colours from 35 brands, find equivalents, and paint your own room photos with Muro.",
   "type": "module",
   "bin": {
