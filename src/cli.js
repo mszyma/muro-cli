@@ -9,7 +9,7 @@ import { marketBrands, resolveColor, shoppingList } from './colors.js';
 import { KEY_RE, forgetKey, readKey, saveKey } from './config.js';
 import { callJson } from './mcp.js';
 
-export const VERSION = '0.1.0';
+export const VERSION = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
 const KEYS_URL = `${APP_URL}/ustawienia`;
 const COST = { standard: 1, hd: 2, ultra: 3 };
 const KIND = { interior: 'wnetrze', facade: 'elewacja', roof: 'dach' };
